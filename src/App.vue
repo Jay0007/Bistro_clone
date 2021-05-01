@@ -21,10 +21,10 @@
 
       <v-spacer></v-spacer>
 
-      <v-btn :to="{ path: '/'}" :ripple="false" text x-large style="font-weight:400" class="appbarButton">
+      <v-btn to="/" :ripple="false" text x-large style="font-weight:400" class="appbarButton">
         <span >home</span>
       </v-btn>
-      <v-btn :to="{ path: '/order/where'}" :ripple="false" text x-large  style="font-weight:400" class="appbarButton">
+      <v-btn to="/order" :ripple="false" text x-large  style="font-weight:400" class="appbarButton">
         <span >Menu</span>
       </v-btn>
       <v-btn :ripple="false" text x-large style="font-weight:400" class="appbarButton">

@@ -6,12 +6,11 @@ var home = () => import("./homepage/index.vue");
 // import companyRoutes from "@/components/inner/company/routes";
 export default [
   {
-    path: "/",
+    path: "",
     component: home
   },
   {
-    path: '/order/where',
-    name: 'orderplace',
+    path: 'order',
     component: orderPlace,
     children: [...orderPlaceRoutes]
   }

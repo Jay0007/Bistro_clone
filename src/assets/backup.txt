@@ -13,7 +13,7 @@
             <v-col class="d-flex align-center">
               <v-icon color="#E0CF5E" size='25' class="delivery_icon mr-5">mdi-basket-outline</v-icon>
               <span class="text-subtitle-1 font-weight-bold">{{address.type}} : {{address.house}}, {{address.street}}, {{address.city}}, {{address.pincode}}</span>
-              <!-- <span>{{this.cart}}</span> -->
+              <span>{{cart}}</span>
             </v-col>
           </v-row>
         </v-card>
@@ -43,7 +43,7 @@
                   <v-row>
                     <template v-for="(item,j) in group_by_category[types]">
                       <v-col cols="6" :key="j">
-                          <v-list-item @click="selecting(item)" :class="{primary: item.count > 0}">
+                          <v-list-item @click="selecting(item)">
                             <template>
                                <!-- v-slot:default="{ active }" -->
                               <v-list-item-content>
@@ -52,7 +52,7 @@
                               </v-list-item-content>
                               <v-list-item-action>
                                 <v-list-item-action-text class="text-h5 font-weight-bold forth--text" v-text="'CA$'+item.price"></v-list-item-action-text>
-                                <v-list-item-action-text class="text-h7 font-weight-bold forth--text" v-if="item.count!=0" v-text="'Quantity:('+item.count+')'"></v-list-item-action-text>
+                                <v-list-item-action-text class="text-h5 font-weight-bold forth--text" v-if="item.count!=0" v-text="item.count"></v-list-item-action-text>
                               </v-list-item-action>
                             </template>
                           </v-list-item>
@@ -144,7 +144,7 @@
                   <v-list-item-action>
                     <v-list-item-action-text class="text-h5 font-weight-bold forth--text" v-text="'CA$'+item.total_price.toFixed(2)"></v-list-item-action-text>
                     <span>
-                      <v-btn outlined icon color="grey lighten-1" @click="decrease(item._id,j)">
+                      <v-btn outlined icon color="grey lighten-1">
                         -
                       </v-btn>
                       {{item.count}}
@@ -170,10 +170,10 @@ export default {
     cart:[],
     dialog: false,
     selected: [],
-    menu: null,
     dialog_object: null,
     config:[],
     address: null,
+    menu: null,
     group_by_category: "",
     item_price: 0,
     total_price: 0
@@ -203,7 +203,6 @@ export default {
               "price": item.price,
               "total_price": Number(item.price)*Number(item.count),
               "count": 1,
-              "sides_total_price": 0,
               "configure": {
                 "sides": []
               }
@@ -218,7 +217,6 @@ export default {
             "price": item.price,
             "total_price": item.price*item.count,
             "count": 1,
-            "sides_total_price": 0,
             "configure": {
               "sides": []
             }
@@ -263,7 +261,6 @@ export default {
             "_id": object._id,
             "item": object.item,
             "price": object.price,
-            "sides_total_price": 0,
             "total_price": Number(object.price)*Number(object.count),
             "count": 1,
             "configure": {
@@ -277,19 +274,19 @@ export default {
             "_id": object._id,
             "item": object.item,
             "price": object.price,
-            "sides_total_price": 0,
             "total_price": object.price*object.count,
             "count": 1,
             "configure": {
               "sides": []
             }
           }
+          var sides_total_price = 0
           for (let index = 0; index < config.length; index++) {
             temp.configure.sides.push(object.configure.sides[config[index]])
             // temp.configure.sides[index].count = 1
-            temp.sides_total_price += Number(temp.configure.sides[index].price)
+            sides_total_price += Number(temp.configure.sides[index].price)
           }
-          temp.total_price = temp.count * (temp.price + temp.sides_total_price)
+          temp.total_price = temp.count * (temp.price + sides_total_price)
           this.cart.push(temp)
         }
       }
@@ -311,7 +308,6 @@ export default {
               "_id": object._id,
               "item": object.item,
               "price": object.price,
-              "sides_total_price": 0,
               "total_price": Number(object.price),
               "count": 1,
               "configure": {
@@ -326,7 +322,6 @@ export default {
             "_id": object._id,
             "item": object.item,
             "price": object.price,
-            "sides_total_price": 0,
             "total_price": 0,
             "count": 1,
             "configure": {
@@ -339,19 +334,21 @@ export default {
           for (let index = 0; index < this.cart.length; index++) {
             if(deepEqual(temp,this.cart[index])){
               this.cart[index].count += 1
+              sides_total_price = 0
               for (let index = 0; index < config.length; index++) {
-                temp.sides_total_price += Number(temp.configure.sides[index].price)
+                sides_total_price += Number(temp.configure.sides[index].price)
               }
-              this.cart[index].total_price = Number(this.cart[index].count) * (Number(this.cart[index].price) + temp.sides_total_price)
+              this.cart[index].total_price = Number(this.cart[index].count) * (Number(this.cart[index].price) + sides_total_price)
               flag = 1
               break
             }
           }
           if(flag == 0){
+            sides_total_price = 0
             for (let index = 0; index < config.length; index++) {
-              temp.sides_total_price += Number(temp.configure.sides[index].price)
+              sides_total_price += Number(temp.configure.sides[index].price)
             }
-            temp.total_price = temp.count * (temp.price + temp.sides_total_price)
+            temp.total_price = temp.count * (temp.price + sides_total_price)
             this.cart.push(temp)
           }
 
@@ -362,27 +359,7 @@ export default {
     },
     increase: function(id,index){
       this.cart[index].count ++
-      this.cart[index].total_price = (this.cart[index].price + this.cart[index].sides_total_price) * this.cart[index].count
-      for (const index1 in this.group_by_category) {
-        var a = this.group_by_category[index1].find(item => item._id == id)
-        if(a){
-          a.count++
-        }
-      }
-    },
-    decrease: function(id,index){
-      this.cart[index].count--
-      this.cart[index].total_price = (this.cart[index].price + this.cart[index].sides_total_price) * this.cart[index].count
-      for (const index1 in this.group_by_category) {
-        var a = this.group_by_category[index1].find(item => item._id == id)
-        if(a){
-          a.count--
-          break
-        }
-      }
-      if(this.cart[index].count == 0){
-        this.cart.splice(index,1)
-      }
+      this.cart[index].total_price = this.cart[index].price * this.cart[index].count
     },
     closing_dialog: function(){
       this.config = []
@@ -401,24 +378,21 @@ export default {
   created(){
     this.address = this.$store.state.address
     this.menu = this.$store.state.menu
-    // this.menu.forEach((element,i) => {
-    //   element["_id"] = i;
-    // })
+    this.menu.forEach((element,i) => {
+      element["_id"] = i;
+    })
     var groupBy = function(xs, key) {
       return xs.reduce(function(rv, x) {
-        (rv[x[key]] = rv[x[key]] || []).push(x)
-        return rv
-      }, {})
+        (rv[x[key]] = rv[x[key]] || []).push(x);
+        return rv;
+      }, {});
     };
-    this.group_by_category = groupBy(this.menu, 'category')
+    var groubedByTeam= groupBy(this.menu, 'category')
+    this.group_by_category = groubedByTeam
   }
 }
 </script>
-<style scoped>
-.activeClass{
-  color: yellow;
-}
-</style>
+
 // <v-menu persistent v-model="dialog" :nudge-width="200" offset-x>
   // <v-card>
   //   <v-card-title>
