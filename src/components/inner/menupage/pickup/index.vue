@@ -1,437 +1,253 @@
 <template>
   <v-container>
     <v-row>
-      <v-col cols='12' class="align-center py-0 my-0">
-        <v-btn :ripple="false" link text class="px-0 back_button" to="/order/delivery">
-          <v-icon align='center' justify='center' class="mr-3 mt-0">mdi-chevron-left</v-icon>
-          <span class="text-h6 text-capitalize font-weight-bold text-decoration-underline">Back</span>
+      <v-col cols="12" class="align-center py-0 my-0">
+        <v-btn
+          :ripple="false"
+          link
+          text
+          class="px-0 back_button"
+          to="/order/delivery"
+        >
+          <v-icon align="center" justify="center" class="mr-3 mt-0"
+            >mdi-chevron-left</v-icon
+          >
+          <span
+            class="text-h6 text-capitalize font-weight-bold text-decoration-underline"
+            >Back</span
+          >
         </v-btn>
       </v-col>
-      <v-col cols='8'>
-        <v-card flat class="d-flex align-center pl-0 py-5 mb-7" to="/order/delivery/new">
-          <v-row class="align-center" align='center'>
+      <v-col cols="8">
+        <v-card
+          flat
+          class="d-flex align-center pl-0 py-5 mb-7"
+          to="/order/delivery/new"
+        >
+          <v-row class="align-center" align="center">
             <v-col class="d-flex align-center">
-              <v-icon color="#E0CF5E" size='25' class="delivery_icon mr-5">mdi-basket-outline</v-icon>
-              <span class="text-subtitle-1 font-weight-bold">{{address.type}} : {{address.house}}, {{address.street}}, {{address.city}}, {{address.pincode}}</span>
-              <!-- <span>{{this.cart}}</span> -->
+              <v-icon color="#E0CF5E" size="25" class="delivery_icon mr-5"
+                >mdi-basket-outline</v-icon
+              >
+              <span class="text-subtitle-1 font-weight-bold"
+                >{{ $store.state.address.type }} :
+                {{ $store.state.address.house }},
+                {{ $store.state.address.street }},
+                {{ $store.state.address.city }},
+                {{ $store.state.address.pincode }}</span
+              >
             </v-col>
           </v-row>
         </v-card>
         <v-divider class="mt-5 "></v-divider>
       </v-col>
-      <v-col cols='8'>
-        <v-expansion-panels multiple flat light >
-          <v-expansion-panel
-            v-for="(types,i) in Object.keys(group_by_category)"
-            :key="i"
-            class="pb-4"
-          >
-            <v-card class="pa-0 primary--text" outlined tile>
-              <v-card-title class="pa-0">
-                <v-expansion-panel-header class="text-h6 font-weight-regular">
-                  {{types}}
-                  <template v-slot:actions>
-                    <v-icon color="primary">mdi-menu-down</v-icon>
-                  </template>
-                </v-expansion-panel-header>
-              </v-card-title>
-            </v-card>
-            <v-expansion-panel-content>
-              <v-list two-line>
-                <!-- <v-list-item-group multiple> -->
-                  <!-- active-class="primary" -->
-                  <v-row>
-                    <template v-for="(item,j) in group_by_category[types]">
-                      <v-col cols="6" :key="j">
-                          <v-list-item @click="selecting(item)" :class="{primary: item.count > 0}">
-                            <template>
-                               <!-- v-slot:default="{ active }" -->
-                              <v-list-item-content>
-                                <v-list-item-title class="text-h6 mb-3 forth--text font-weight-bold" v-text="item.item"></v-list-item-title>
-                                <v-list-item-subtitle v-text="item.description"></v-list-item-subtitle>
-                              </v-list-item-content>
-                              <v-list-item-action>
-                                <v-list-item-action-text class="text-h5 font-weight-bold forth--text" v-text="'CA$'+item.price"></v-list-item-action-text>
-                                <v-list-item-action-text class="text-h7 font-weight-bold forth--text" v-if="item.count!=0" v-text="'Quantity:('+item.count+')'"></v-list-item-action-text>
-                              </v-list-item-action>
-                            </template>
-                          </v-list-item>
-                        <v-divider v-if="j + 1 < types.length" :key="j"></v-divider>
-                      </v-col>
-                    </template>
-                  </v-row>
-                <!-- </v-list-item-group> -->
-              </v-list>
-            </v-expansion-panel-content>
-          </v-expansion-panel>
-        </v-expansion-panels>
-        <v-dialog
-          persistent
-          v-model="dialog"
-          max-width="500px"
-        >
-          <v-card>
-            <v-card-title v-if="dialog_object!=null">
-              {{dialog_object.item}}
-            </v-card-title>
-            <v-list shaped v-if="dialog_object!=null">
-              <v-list-item-group
-                v-model="config"
-                multiple
-              >
-                <template>
-                  <v-list-item
-                    v-for="(item, i) in dialog_object.configure.sides"
-                    :key="`item-${i}`"
-                    :value="item.item"
-                    active-class="deep-purple--text text--accent-4"
-                  >
-                    <template v-slot:default="{ active }">
-                      <v-list-item-content>
-                        <v-list-item-title v-text="item.name">
-                        </v-list-item-title>
-                      </v-list-item-content>
-
-                      <v-list-item-action>
-                        <v-checkbox
-                          :input-value="active"
-                          color="deep-purple accent-4"
-                        ></v-checkbox>
-                      </v-list-item-action>
-                    </template>
-                  </v-list-item>
-                </template>
-              </v-list-item-group>
-            </v-list>
-            <v-card-actions>
-              <v-btn
-                color="primary"
-                text
-                @click="closing_dialog"
-              >
-                Close
-              </v-btn>
-              <v-spacer></v-spacer>
-              <v-btn
-                color="primary"
-                text
-                @click="adding_cart(dialog_object,config)"
-              >
-                Add
-              </v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
+      <v-col cols="8">
+        <menuItems />
       </v-col>
       <v-col>
-        <v-card class="pa-5 white--text mb-5" outlined tile>
-          <v-btn x-large block depressed :ripple="false" tile color="primary" >LOGIN</v-btn>
+        <v-card
+          v-if="$store.state.loggedIn"
+          class="pa-5 white--text mb-5"
+          outlined
+          tile
+        >
+          <div>
+            <v-text-field
+              v-model="name"
+              solo
+              flat
+              class="ma-0 pa-0"
+              hide-details
+              label="Name"
+              prepend-icon="mdi-face"
+            ></v-text-field>
+            <v-text-field
+              v-model="$store.state.user.mobile"
+              solo
+              flat
+              class="ma-0 pa-0"
+              hide-details
+              label="Mobile Number"
+              prepend-icon="mdi-phone"
+            ></v-text-field>
+            <v-text-field
+              v-model="$store.state.user.email"
+              solo
+              flat
+              class="ma-0 pa-0"
+              hide-details
+              label="Email"
+              prepend-icon="mdi-mail"
+            ></v-text-field>
+            <v-text-field
+              v-model="$store.state.user.cardpay"
+              solo
+              flat
+              class="ma-0 pa-0"
+              hide-details
+              label="Payment Method"
+              prepend-icon="mdi-card"
+            ></v-text-field>
+            <v-checkbox
+              v-model="$store.state.user.promotionreceive"
+              class="ma-0 py-3"
+              hide-details
+              label="Receive promotions"
+              required
+            ></v-checkbox>
+            <v-btn
+              text
+              color="blue-grey"
+              class="pl-0 white--text"
+              @click="loggingOut"
+            >
+              <v-icon class="mr-5">mdi-cloud-upload</v-icon>
+              Logout
+            </v-btn>
+          </div>
         </v-card>
-        <v-card class="pa-0 white--text" outlined tile>
-          <v-card-title class="headline primary px-5">
-            Basket
-            <v-spacer></v-spacer>
-            CA${{total_cart_price.toFixed(2)}}
-          </v-card-title>
-          <v-list two-line v-if="cart!=[]">
-            <template v-for="(item,j) in cart" >
-              <v-list-item :key="j">
-                <template>
-                  <v-list-item-content>
-                    <v-list-item-title class="text-h6 mb-3 forth--text font-weight-bold" v-text="item.item"></v-list-item-title>
-                    <v-list-item-subtitle v-for="i in item.configure.sides" v-text="i.name" :key="i.name"></v-list-item-subtitle>
-                  </v-list-item-content>
-                  <v-list-item-action>
-                    <v-list-item-action-text class="text-h5 font-weight-bold forth--text" v-text="'CA$'+item.total_price.toFixed(2)"></v-list-item-action-text>
-                    <span>
-                      <v-btn outlined icon color="grey lighten-1" @click="decrease(item._id,j)">
-                        -
-                      </v-btn>
-                      {{item.count}}
-                      <v-btn outlined icon color="grey lighten-1" @click="increase(item._id,j)">
-                        +
-                      </v-btn>
-                    </span>
-                  </v-list-item-action>
-                </template>
-              </v-list-item>
-              <!-- <v-divider v-if="j + 1 < types.length" :key="j"></v-divider> -->
+        <v-card v-else class="pa-5 white--text mb-5" outlined tile>
+          <v-dialog
+            v-model="$store.state.dialog2"
+            fullscreen
+            hide-overlay
+            transition="dialog-bottom-transition"
+          >
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                x-large
+                block
+                depressed
+                :ripple="false"
+                tile
+                color="primary"
+                v-bind="attrs"
+                v-on="on"
+              >
+                LOGIN
+              </v-btn>
             </template>
-          </v-list>
+            <!-- class="d-flex flex-column align-center justify-center" -->
+            <v-card>
+              <v-toolbar flat color="primary" dark>
+                <v-toolbar-title>User Login / SignUp</v-toolbar-title>
+                <v-spacer></v-spacer>
+                <v-btn color="forth" text @click="$store.state.dialog2 = false"
+                  >Cancle</v-btn
+                >
+                <template v-slot:extension>
+                  <v-tabs
+                    centered
+                    dark
+                    icons-and-text
+                    fixed-tabs
+                    v-model="activeTab"
+                  >
+                    <v-tab>
+                      <v-icon left>mdi-lock</v-icon>
+                      Login
+                    </v-tab>
+                    <v-tab>
+                      <v-icon left>mdi-account</v-icon>
+                      Sign Up
+                    </v-tab>
+                  </v-tabs>
+                </template>
+              </v-toolbar>
+              <v-tabs-items v-model="activeTab">
+                <v-tab-item>
+                  <v-container class="mt-3">
+                    <login v-on:change-tab="activeTab = 1" />
+                  </v-container>
+                </v-tab-item>
+                <v-tab-item>
+                  <v-container class="mt-3">
+                    <signup />
+                  </v-container>
+                </v-tab-item>
+              </v-tabs-items>
+            </v-card>
+          </v-dialog>
         </v-card>
+        <cart />
       </v-col>
     </v-row>
   </v-container>
 </template>
 <script>
-// import axios from "axios"
+import login from "../../../outer/login/index";
+import signup from "../../../outer/register/index";
+import cart from "./cart/index";
+import menuItems from "./menu/index";
 export default {
-  data:() => ({
-    cart:[],
-    dialog: false,
-    selected: [],
+  components: {
+    login,
+    signup,
+    cart,
+    menuItems,
+  },
+  data: () => ({
+    loggedIn: false,
+    inset: false,
     menu: null,
-    dialog_object: null,
-    config:[],
-    address: null,
-    group_by_category: "",
-    item_price: 0,
-    total_price: 0
+    activeTab: null,
+    total_price: 0,
   }),
+  watch: {
+    // $store.state.cart(){
+    //   $store.state.cart =
+    // },
+    name() {
+      setTimeout(() => {
+        console.log("waiting");
+      }, 5000).then((val) => {
+        console.log(val);
+      });
+    },
+  },
   methods: {
-    selecting: function(item){
-      if(item.configure){
-        this.dialog_object = item
-        this.dialog = true
-      }
-      else{
-        item.count +=1
-        var flag = 0
-        if(this.cart.length != 0){
-          for (let index = 0; index < this.cart.length; index++) {
-            if(item._id == this.cart[index]._id){
-              this.cart[index].count += 1
-              this.cart[index].total_price = Number(this.cart[index].count) * Number(this.cart[index].price)
-              flag = 1
-              break
-            }
-          }
-          if(flag == 0){
-            let temp = {
-              "_id": item._id,
-              "item": item.item,
-              "price": item.price,
-              "total_price": Number(item.price)*Number(item.count),
-              "count": 1,
-              "sides_total_price": 0,
-              "configure": {
-                "sides": []
-              }
-            }
-            this.cart.push(temp)
-          }
-        }
-        else{
-          let temp = {
-            "_id": item._id,
-            "item": item.item,
-            "price": item.price,
-            "total_price": item.price*item.count,
-            "count": 1,
-            "sides_total_price": 0,
-            "configure": {
-              "sides": []
-            }
-          }
-          this.cart.push(temp)
-        }
-      }
+    mouseLeave: function() {
+      alert("Mouse Leave");
     },
-    adding_cart: function(object, config){
-      config.sort()
-      object.count +=1
-      var isObject = function (object) {
-        return object != null && typeof object === 'object';
-      }
-      var deepEqual = function (object1, object2) {
-        var keys1 = Object.keys(object1);
-        var keys2 = Object.keys(object2);
-        const toRemove = ["category", "description", "price", "total_price", "count"]
-        keys1 = keys1.filter( ( el ) => !toRemove.includes( el ) )
-        keys2 = keys2.filter( ( el ) => !toRemove.includes( el ) )
-        if (keys1.length !== keys2.length) {
-          return false;
-        }
-
-        for (const key of keys1) {
-          const val1 = object1[key];
-          const val2 = object2[key];
-          const areObjects = isObject(val1) && isObject(val2);
-          if (
-            areObjects && !deepEqual(val1, val2) ||
-            !areObjects && val1 !== val2
-          ) {
-            return false;
-          }
-        }
-
-        return true;
-      }
-      if(this.cart.length == 0){
-        if(config.length == 0){
-          let temp = {
-            "_id": object._id,
-            "item": object.item,
-            "price": object.price,
-            "sides_total_price": 0,
-            "total_price": Number(object.price)*Number(object.count),
-            "count": 1,
-            "configure": {
-              "sides": []
-            }
-          }
-          this.cart.push(temp)
-        }
-        else{
-          let temp = {
-            "_id": object._id,
-            "item": object.item,
-            "price": object.price,
-            "sides_total_price": 0,
-            "total_price": object.price*object.count,
-            "count": 1,
-            "configure": {
-              "sides": []
-            }
-          }
-          for (let index = 0; index < config.length; index++) {
-            temp.configure.sides.push(object.configure.sides[config[index]])
-            // temp.configure.sides[index].count = 1
-            temp.sides_total_price += Number(temp.configure.sides[index].price)
-          }
-          temp.total_price = temp.count * (temp.price + temp.sides_total_price)
-          this.cart.push(temp)
-        }
-      }
-      else{
-        var flag = 0
-        if(config.length == 0){
-          for (let index = 0; index < this.cart.length; index++) {
-            if(this.cart[index].configure.sides.length == 0){
-              if(object._id == this.cart[index]._id){
-                this.cart[index].count += 1
-                this.cart[index].total_price = Number(this.cart[index].count) * Number(this.cart[index].price)
-                flag = 1
-                break
-              }
-            }
-          }
-          if(flag == 0){
-            let temp = {
-              "_id": object._id,
-              "item": object.item,
-              "price": object.price,
-              "sides_total_price": 0,
-              "total_price": Number(object.price),
-              "count": 1,
-              "configure": {
-                "sides": []
-              }
-            }
-            this.cart.push(temp)
-          }
-        }
-        else{
-          let temp = {
-            "_id": object._id,
-            "item": object.item,
-            "price": object.price,
-            "sides_total_price": 0,
-            "total_price": 0,
-            "count": 1,
-            "configure": {
-              "sides": []
-            }
-          }
-          for (let index = 0; index < config.length; index++) {
-            temp.configure.sides.push(object.configure.sides[config[index]])
-          }
-          for (let index = 0; index < this.cart.length; index++) {
-            if(deepEqual(temp,this.cart[index])){
-              this.cart[index].count += 1
-              for (let index = 0; index < config.length; index++) {
-                temp.sides_total_price += Number(temp.configure.sides[index].price)
-              }
-              this.cart[index].total_price = Number(this.cart[index].count) * (Number(this.cart[index].price) + temp.sides_total_price)
-              flag = 1
-              break
-            }
-          }
-          if(flag == 0){
-            for (let index = 0; index < config.length; index++) {
-              temp.sides_total_price += Number(temp.configure.sides[index].price)
-            }
-            temp.total_price = temp.count * (temp.price + temp.sides_total_price)
-            this.cart.push(temp)
-          }
-
-        }
-      }
-      this.config = []
-      this.dialog = false
+    loggingOut: function() {
+      var that = this;
+      that.$axios.get("http://localhost:3000/user/logout").then(function(res) {
+        that.$store.dispatch("removeTokenForUser", {
+          token: res.data,
+        });
+        that.$store.state.loggedIn = false;
+      });
     },
-    increase: function(id,index){
-      this.cart[index].count ++
-      this.cart[index].total_price = (this.cart[index].price + this.cart[index].sides_total_price) * this.cart[index].count
-      for (const index1 in this.group_by_category) {
-        var a = this.group_by_category[index1].find(item => item._id == id)
-        if(a){
-          a.count++
-        }
-      }
-    },
-    decrease: function(id,index){
-      this.cart[index].count--
-      this.cart[index].total_price = (this.cart[index].price + this.cart[index].sides_total_price) * this.cart[index].count
-      for (const index1 in this.group_by_category) {
-        var a = this.group_by_category[index1].find(item => item._id == id)
-        if(a){
-          a.count--
-          break
-        }
-      }
-      if(this.cart[index].count == 0){
-        this.cart.splice(index,1)
-      }
-    },
-    closing_dialog: function(){
-      this.config = []
-      this.dialog = false
-    }
-
   },
   computed: {
-    configlist(){
-      return this.info.filter(i => i.col === 'one')
+    // ...mapState(['$store.state.cart', '$store.state.group_by_category', '$store.state.address', 'user']),
+    name: {
+      get() {
+        return this.username;
+      },
+      set(value) {
+        this.$store.commit("updateUsername", value);
+      },
     },
-    total_cart_price: function(){
-      return (this.cart.reduce((prev, cur) => prev + cur.total_price, 0))
-    }
+    configlist() {
+      return this.info.filter((i) => i.col === "one");
+    },
   },
-  created(){
-    this.address = this.$store.state.address
-    this.menu = this.$store.state.menu
-    // this.menu.forEach((element,i) => {
-    //   element["_id"] = i;
-    // })
-    var groupBy = function(xs, key) {
-      return xs.reduce(function(rv, x) {
-        (rv[x[key]] = rv[x[key]] || []).push(x)
-        return rv
-      }, {})
-    };
-    this.group_by_category = groupBy(this.menu, 'category')
-  }
-}
+  created() {
+    console.log(window.localStorage.getItem("location"));
+    this.$store.state.address = JSON.parse(
+      window.localStorage.getItem("location")
+    );
+    if (!this.$store.state.address.street) {
+      this.$router.push("/order");
+    }
+
+    // this.menu = this.$store.state.menu
+  },
+};
 </script>
 <style scoped>
-.activeClass{
+.activeClass {
   color: yellow;
 }
 </style>
-// <v-menu persistent v-model="dialog" :nudge-width="200" offset-x>
-  // <v-card>
-  //   <v-card-title>
-  //     {{dialog_object.item}}
-  //   </v-card-title>
-  //   <v-card-actions>
-  //     <v-btn
-  //       color="primary"
-  //       text
-  //       @click="dialog=false"
-  //     >
-  //       Close
-  //     </v-btn>
-  //   </v-card-actions>
-  // </v-card>
-// </v-menu>
