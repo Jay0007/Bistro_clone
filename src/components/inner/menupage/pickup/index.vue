@@ -53,13 +53,14 @@
         >
           <div>
             <v-text-field
-              v-model="name"
+              v-model="$store.state.user.name"
               solo
               flat
               class="ma-0 pa-0"
               hide-details
               label="Name"
               prepend-icon="mdi-face"
+              v-on:blur="printconsole"
             ></v-text-field>
             <v-text-field
               v-model="$store.state.user.mobile"
@@ -69,9 +70,11 @@
               hide-details
               label="Mobile Number"
               prepend-icon="mdi-phone"
+              v-on:blur="printconsole"
             ></v-text-field>
             <v-text-field
               v-model="$store.state.user.email"
+              readonly
               solo
               flat
               class="ma-0 pa-0"
@@ -94,6 +97,7 @@
               hide-details
               label="Receive promotions"
               required
+              v-on:change="printconsole"
             ></v-checkbox>
             <v-btn
               text
@@ -188,7 +192,6 @@ export default {
   },
   data: () => ({
     loggedIn: false,
-    inset: false,
     menu: null,
     activeTab: null,
     total_price: 0,
@@ -206,17 +209,36 @@ export default {
     },
   },
   methods: {
+    printconsole: function() {
+      console.log("printconsole triggered");
+      this.$axios
+        .put(
+          this.$store.getters.getBaseUrl + "/updateuserdetails",
+          this.$store.state.user
+        )
+        .then((res) => {
+          console.log(res);
+        })
+        .catch(() => {
+          console.log("ERROR");
+        });
+    },
     mouseLeave: function() {
       alert("Mouse Leave");
     },
     loggingOut: function() {
       var that = this;
-      that.$axios.get("http://localhost:3000/user/logout").then(function(res) {
-        that.$store.dispatch("removeTokenForUser", {
-          token: res.data,
+      that.$axios
+        .get("http://localhost:3000/user/logout")
+        .then(function(res) {
+          that.$store.dispatch("removeTokenForUser", {
+            token: res.data,
+          });
+          that.$store.state.loggedIn = false;
+        })
+        .catch(() => {
+          console.log("ERROR");
         });
-        that.$store.state.loggedIn = false;
-      });
     },
   },
   computed: {
@@ -234,14 +256,12 @@ export default {
     },
   },
   created() {
-    console.log(window.localStorage.getItem("location"));
     this.$store.state.address = JSON.parse(
       window.localStorage.getItem("location")
     );
     if (!this.$store.state.address.street) {
       this.$router.push("/order");
     }
-
     // this.menu = this.$store.state.menu
   },
 };

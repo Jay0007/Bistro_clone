@@ -138,7 +138,7 @@ export default {
   }),
   methods: {
     selecting: function(item) {
-      if (item.configure) {
+      if (item.configure.sides.length != 0) {
         this.dialog_object = item;
         this.dialog = true;
       } else {

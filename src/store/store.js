@@ -25,7 +25,7 @@ export const store = new Vuex.Store({
       name: "",
       mobile: "",
       email: "",
-      cardpay: "",
+      cardpay: "credit/debit card",
       promotionreceive: false,
     },
     loggedIn: false,

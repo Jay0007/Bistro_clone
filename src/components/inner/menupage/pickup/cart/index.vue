@@ -70,7 +70,9 @@
 <script>
 // import axios from "axios"
 export default {
-  data: () => ({}),
+  data: () => ({
+    inset: false,
+  }),
   methods: {
     cart_increase: function(id, index) {
       console.log(id);

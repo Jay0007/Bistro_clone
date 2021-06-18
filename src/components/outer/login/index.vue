@@ -108,6 +108,7 @@ export default {
         .post(this.$store.getters.getBaseUrl + "/user/login", userData)
         .then(function(res) {
           that.loading = false;
+          that.$store.state.user.email = that.email;
           that.$store
             .dispatch("setTokenForUser", {
               token: res.data,
@@ -115,7 +116,18 @@ export default {
             .then(() => {
               that.$store.state.dialog2 = false;
               that.$store.state.loggedIn = true;
-              // that.$router.push({ path: "/app/home" });
+              that.$axios
+                .get("http://localhost:3000/getuserdetails", {
+                  params: { email: that.$store.state.user.email },
+                })
+                .then(function(res) {
+                  console.log(res.data);
+                  that.$store.state.user = res.data;
+                  console.log(that.$store.state.user);
+                })
+                .catch(() => {
+                  console.log("ERROR");
+                });
             });
         })
         .catch(function(error) {

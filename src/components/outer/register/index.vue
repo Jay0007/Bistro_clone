@@ -102,7 +102,7 @@ export default {
       };
       var that = this;
       await axios
-        .post(this.$store.getters.getBaseUrl + "/user/register", userData)
+        .post(that.$store.getters.getBaseUrl + "/user/register", userData)
         .then(function(res) {
           console.log(res);
           if (res.data === "email already exist") {
@@ -120,11 +120,27 @@ export default {
               });
             } else {
               that.loading = false;
+              that.$store.state.user.email = that.email;
               that.$store
                 .dispatch("setTokenForUser", {
                   token: res.data,
                 })
                 .then(() => {
+                  axios
+                    .post(
+                      that.$store.getters.getBaseUrl + "/userdetails",
+                      that.$store.state.user
+                    )
+                    .then(function(result) {
+                      console.log("Userdetails post");
+                      console.log(result);
+                      that.$store.state.loggedIn = true;
+                    })
+                    .catch((err) => {
+                      console.log("Userdetails post problem");
+
+                      console.log(err);
+                    });
                   that.$store.state.dialog2 = false;
                   // that.$router.push({ path: "/app/home" });
                 });
